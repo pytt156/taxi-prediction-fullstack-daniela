@@ -7,24 +7,31 @@ from zoneinfo import ZoneInfo
 
 
 class CreateDefaults:
-    def __init__(self, payload: dict):
+    def __init__(self, payload: dict, defaults: dict):
         self.payload = payload
+        self.defaults = defaults
         self.now = datetime.now(ZoneInfo("Europe/Stockholm"))
 
     def apply(self) -> dict:
         if self.payload.get("day_of_week") is None:
             self.payload["day_of_week"] = self._day_of_week()
+
         if self.payload.get("time_of_day") is None:
-            self.payload["time_of_day"] = self._time_of_day
+            self.payload["time_of_day"] = self._time_of_day()
+
         if self.payload.get("trip_duration_minutes") is None:
             self.payload["trip_duration_minutes"] = self._estimate_trip_duration(
                 self.payload["trip_distance_km"]
             )
 
+        for key, value in self.defaults.items():
+            if self.payload.get(key) is None:
+                self.payload[key] = value
+
         return self.payload
 
-    def _time_of_day(self, now: datetime):
-        hour = now.hour
+    def _time_of_day(self):
+        hour = self.now.hour
         if 6 <= hour < 12:
             return "Morning"
         if 12 <= hour < 18:
@@ -33,8 +40,8 @@ class CreateDefaults:
             return "Evening"
         return "Night"
 
-    def _day_of_week(self, now: datetime):
-        return "Weekend" if now.weekday() >= 5 else "Weekday"
+    def _day_of_week(self):
+        return "Weekend" if self.now.weekday() >= 5 else "Weekday"
 
     def _estimate_trip_duration(self, trip_distance_km: float, avg_speed: float = 40.0):
         return (trip_distance_km / avg_speed) * 60.0
@@ -45,7 +52,7 @@ class PredictionInput(BaseModel):
     time_of_day: Optional[Literal["Morning", "Afternoon", "Evening", "Night"]] = None
     day_of_week: Optional[Literal["Weekday", "Weekend"]] = None
 
-    passenger_count: int = Field(default=1, ge=1, le=8)
+    passenger_count: Optional[int] = Field(default=1, ge=1, le=8)
     traffic_conditions: Optional[Literal["Low", "Medium", "High"]] = None
     weather: Optional[Literal["Clear", "Rain", "Snow"]] = None
 

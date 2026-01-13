@@ -14,9 +14,17 @@ from taxipred.backend.data_processing import (
 async def lifespan(app: FastAPI):
     app.state.model = joblib.load(MODEL)
     app.state.df = pd.read_csv(TAXI_CSV_CLEANED)
+    app.state.defaults = {
+        "base_fare": app.state.df["base_fare"].median(),
+        "per_km_rate": app.state.df["per_km_rate"].median(),
+        "per_minute_rate": app.state.df["per_minute_rate"].median(),
+        "weather": app.state.df["weather"].mode().iloc[0],
+        "traffic_conditions": app.state.df["traffic_conditions"].mode().iloc[0],
+    }
     yield
     del app.state.df
     del app.state.model
+    del app.state.defaults
 
 
 app = FastAPI(lifespan=lifespan)
@@ -46,7 +54,7 @@ async def sample(sample_size: int = Query(10, ge=1, le=100)):
 
 @app.post("/predict")
 async def predict(payload: PredictionInput):
-    input_data = CreateDefaults(payload.model_dump()).apply()
+    input_data = CreateDefaults(payload.model_dump(), app.state.defaults).apply()
     input_df = pd.DataFrame([input_data])
     prediction = app.state.model.predict(input_df)[0]
-    return {"prediction": float(prediction)}
+    return {"prediction": float(prediction), "inputs_used": input_data}

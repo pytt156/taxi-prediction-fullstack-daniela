@@ -42,4 +42,7 @@ async def sample(sample_size: int = Query(10, ge=1, le=100)):
 
 @app.post("/predict")
 async def predict(payload: PredictionInput):
-    return payload.model_dump()
+    input_data = payload.model_dump()
+    input_df = pd.DataFrame([input_data])
+    prediction = app.state.model.predict(input_df)[0]
+    return {"prediction": float(prediction)}

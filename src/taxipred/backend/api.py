@@ -3,7 +3,11 @@ from contextlib import asynccontextmanager
 from taxipred.utils.constants import MODEL, TAXI_CSV_CLEANED
 import joblib
 import pandas as pd
-from taxipred.backend.data_processing import DataExplorer, PredictionInput
+from taxipred.backend.data_processing import (
+    DataExplorer,
+    PredictionInput,
+    CreateDefaults,
+)
 
 
 @asynccontextmanager
@@ -42,7 +46,7 @@ async def sample(sample_size: int = Query(10, ge=1, le=100)):
 
 @app.post("/predict")
 async def predict(payload: PredictionInput):
-    input_data = payload.model_dump()
+    input_data = CreateDefaults(payload.model_dump()).apply()
     input_df = pd.DataFrame([input_data])
     prediction = app.state.model.predict(input_df)[0]
     return {"prediction": float(prediction)}

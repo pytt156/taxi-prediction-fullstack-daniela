@@ -3,11 +3,8 @@ from contextlib import asynccontextmanager
 from taxipred.utils.constants import MODEL, TAXI_CSV_CLEANED
 import joblib
 import pandas as pd
-from taxipred.backend.data_processing import (
-    DataExplorer,
-    PredictionInput,
-    CreateDefaults,
-)
+from taxipred.backend.schemas import PredictionInput
+from taxipred.backend.explore import DataExplorer
 
 
 @asynccontextmanager
@@ -37,7 +34,7 @@ async def start():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "build": "api-2026-01-15-XYZ"}
 
 
 @app.get("/stats")
@@ -54,7 +51,10 @@ async def sample(sample_size: int = Query(10, ge=1, le=100)):
 
 @app.post("/predict")
 async def predict(payload: PredictionInput):
-    input_data = CreateDefaults(payload.model_dump(), app.state.defaults).apply()
+    input_data = payload.model_dump()
+    for key, value in app.state.defaults.items():
+        if input_data.get(key) is None:
+            input_data[key] = value
     input_df = pd.DataFrame([input_data])
     prediction = app.state.model.predict(input_df)[0]
     return {"prediction": float(prediction), "inputs_used": input_data}

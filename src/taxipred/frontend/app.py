@@ -1,10 +1,8 @@
 import streamlit as st
 import requests
-from taxipred.frontend.map import geocode, get_route, build_map
-from streamlit_folium import st_folium
 
 
-st.markdown("#Hejhej!")
+st.markdown("# Predict taxi prices")
 
 API_URL = "http://localhost:8000/predict"
 AUTO = "(auto)"
@@ -89,14 +87,3 @@ if submitted:
         st.error(f"HTTP error {response.status_code}: {response.text}")
     except requests.RequestException as err:
         st.error(f"Request failed: {err}")
-
-a = st.text_input("Place A")
-b = st.text_input("Place B")
-
-if a and b:
-    a_latlon = geocode(a)
-    b_latlon = geocode(b)
-
-    if a_latlon and b_latlon:
-        m = build_map(a_latlon, b_latlon)
-        st_folium(m, width=800, height=500)

@@ -1,13 +1,17 @@
+from __future__ import annotations
+
+import os
 import pandas as pd
 import pydeck as pdk
 import requests
 import streamlit as st
-import os
 
-API_BASE = st.session_state.get(
-    "api_base_url", os.getenv("TAXIPRED_API_URL", "http://localhost:8000")
-).rstrip("/")
-PREDICT_URL = f"{API_BASE}/predict"
+
+def get_api_base() -> str:
+    return st.session_state.get(
+        "api_base_url",
+        os.getenv("TAXIPRED_API_URL", "http://localhost:8000"),
+    ).rstrip("/")
 
 
 def geocode_nominatim(query: str) -> dict:
@@ -15,9 +19,9 @@ def geocode_nominatim(query: str) -> dict:
     params = {"q": query, "format": "json", "limit": 1}
     headers = {"User-Agent": "taxi-prediction-lab/1.0 (streamlit demo)"}
 
-    r = requests.get(url, params=params, headers=headers, timeout=10)
-    r.raise_for_status()
-    data = r.json()
+    response = requests.get(url, params=params, headers=headers, timeout=10)
+    response.raise_for_status()
+    data = response.json()
 
     if not data:
         raise ValueError(f"No geocoding results for: {query}")
@@ -33,12 +37,12 @@ def route_osrm(a_lon: float, a_lat: float, b_lon: float, b_lat: float) -> dict:
     url = f"https://router.project-osrm.org/route/v1/driving/{a_lon},{a_lat};{b_lon},{b_lat}"
     params = {"overview": "full", "geometries": "geojson"}
 
-    r = requests.get(url, params=params, timeout=10)
-    r.raise_for_status()
-    data = r.json()
+    response = requests.get(url, params=params, timeout=10)
+    response.raise_for_status()
+    data = response.json()
 
     if data.get("code") != "Ok" or not data.get("routes"):
-        raise ValueError("OSRM routing failed.")
+        raise ValueError("OSRM routing failed")
 
     route = data["routes"][0]
     return {
@@ -48,35 +52,30 @@ def route_osrm(a_lon: float, a_lat: float, b_lon: float, b_lat: float) -> dict:
     }
 
 
-def predict_price(trip_distance_km: float) -> dict:
-    payload = {"trip_distance_km": float(trip_distance_km)}
-    try:
-        r = requests.post(PREDICT_URL, json=payload, timeout=10)
-        r.raise_for_status()
-        return r.json()
-    except requests.HTTPError:
-        raise ValueError(f"Backend error {r.status_code}: {r.text}")
-
-
-def zoom_for_distance_km(d: float) -> int:
-    if d < 2:
+def zoom_for_distance_km(distance_km: float) -> int:
+    if distance_km < 2:
         return 13
-    if d < 8:
+    if distance_km < 8:
         return 12
-    if d < 20:
+    if distance_km < 20:
         return 10
     return 9
 
 
-def make_map(a: dict, b: dict, geometry: list, distance_km: float) -> None:
+def render_map(
+    point_a: dict,
+    point_b: dict,
+    geometry: list,
+    distance_km: float,
+) -> None:
     points = pd.DataFrame(
         [
-            {"name": "A", "lat": a["lat"], "lon": a["lon"]},
-            {"name": "B", "lat": b["lat"], "lon": b["lon"]},
+            {"name": "A", "lat": point_a["lat"], "lon": point_a["lon"]},
+            {"name": "B", "lat": point_b["lat"], "lon": point_b["lon"]},
         ]
     )
 
-    scatter = pdk.Layer(
+    scatter_layer = pdk.Layer(
         "ScatterplotLayer",
         data=points,
         get_position="[lon, lat]",
@@ -85,7 +84,7 @@ def make_map(a: dict, b: dict, geometry: list, distance_km: float) -> None:
     )
 
     path_df = pd.DataFrame([{"path": geometry}])
-    path = pdk.Layer(
+    path_layer = pdk.Layer(
         "PathLayer",
         data=path_df,
         get_path="path",
@@ -94,15 +93,16 @@ def make_map(a: dict, b: dict, geometry: list, distance_km: float) -> None:
     )
 
     view_state = pdk.ViewState(
-        latitude=(a["lat"] + b["lat"]) / 2,
-        longitude=(a["lon"] + b["lon"]) / 2,
+        latitude=(point_a["lat"] + point_b["lat"]) / 2,
+        longitude=(point_a["lon"] + point_b["lon"]) / 2,
         zoom=zoom_for_distance_km(distance_km),
     )
 
     deck = pdk.Deck(
-        layers=[path, scatter],
+        layers=[path_layer, scatter_layer],
         initial_view_state=view_state,
         tooltip={"text": "{name}"},
         map_style="light",
     )
+
     st.pydeck_chart(deck, use_container_width=True)

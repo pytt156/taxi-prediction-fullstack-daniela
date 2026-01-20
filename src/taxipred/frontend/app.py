@@ -95,7 +95,6 @@ with left:
         submitted = st.form_submit_button("Predict", use_container_width=True)
 
 with right:
-    st.subheader("Result")
     result_box = st.container(border=True)
 
     if not submitted:
@@ -107,7 +106,9 @@ with right:
             "time_of_day": None if time_of_day == "Now" else time_of_day,
             "day_of_week": None if day_of_week == "Today" else day_of_week,
             "passenger_count": passenger_count,
-            "traffic_conditions": None if traffic_conditions == AUTO else traffic_conditions,
+            "traffic_conditions": None
+            if traffic_conditions == AUTO
+            else traffic_conditions,
             "weather": None if weather == AUTO else weather,
             "base_fare": base_fare if base_fare > 0 else None,
             "per_km_rate": per_km_rate if per_km_rate > 0 else None,

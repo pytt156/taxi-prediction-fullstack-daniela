@@ -10,7 +10,7 @@ from taxipred.utils.routing import (
 
 st.set_page_config(page_title="Routes", page_icon="🗺️", layout="wide")
 
-st.title("🗺️ Route-based taxi prediction")
+st.title("Route-based taxi prediction")
 st.caption(
     "Enter A and B. The app geocodes with Nominatim, routes via OSRM, "
     "uses the route distance for prediction, and shows the route on a map."
@@ -39,7 +39,6 @@ with left:
         submitted = st.form_submit_button("Route + predict", use_container_width=True)
 
 with right:
-    st.subheader("Result")
     result_box = st.container(border=True)
 
 if not submitted:

@@ -29,18 +29,6 @@ The project focuses on:
     │       └── utils/         # Shared business & ML logic
     ├── pyproject.toml
     └── uv.lock
-
-
-
-### What lives where
-- data/raw/: original dataset (never modified)
-- data/processed/: cleaned dataset used for training
-- notebooks/: EDA, cleaning, evaluation, and pipeline creation
-- models/: serialized trained model
-- src/taxipred/backend/: FastAPI service and schemas
-- src/taxipred/frontend/: Streamlit UI
-- src/taxipred/utils/: shared logic (data loading, prediction, routing)
-
 ---
 
 ## How to Use This Repo
@@ -120,10 +108,8 @@ Model evaluation:
 ---
 
 ## Known Limitations
-- This is a learning and portfolio project.
+- This is a learning project.
 - No monitoring, CI/CD, or production deployment is included.
 - Changes to features require retraining the model.
 
 ---
-
-## License

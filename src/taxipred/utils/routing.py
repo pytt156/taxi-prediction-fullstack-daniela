@@ -53,7 +53,9 @@ def route_osrm(a_lon: float, a_lat: float, b_lon: float, b_lat: float) -> dict:
 
 
 def zoom_for_distance_km(distance_km: float) -> int:
-    if distance_km < 2:
+    if distance_km < 1:
+        return 14
+    if distance_km < 3:
         return 13
     if distance_km < 8:
         return 12
@@ -70,39 +72,76 @@ def render_map(
 ) -> None:
     points = pd.DataFrame(
         [
-            {"name": "A", "lat": point_a["lat"], "lon": point_a["lon"]},
-            {"name": "B", "lat": point_b["lat"], "lon": point_b["lon"]},
+            {
+                "name": "Start",
+                "label": point_a.get("display_name", "Point A"),
+                "lat": point_a["lat"],
+                "lon": point_a["lon"],
+                "fill_color": [46, 204, 113, 230],
+                "line_color": [255, 255, 255, 220],
+            },
+            {
+                "name": "Destination",
+                "label": point_b.get("display_name", "Point B"),
+                "lat": point_b["lat"],
+                "lon": point_b["lon"],
+                "fill_color": [231, 76, 60, 230],
+                "line_color": [255, 255, 255, 220],
+            },
         ]
+    )
+
+    path_df = pd.DataFrame([{"path": geometry}])
+
+    route_casing = pdk.Layer(
+        "PathLayer",
+        data=path_df,
+        get_path="path",
+        get_color=[0, 0, 0, 140],
+        width_min_pixels=8,
+        rounded=True,
+        pickable=False,
+    )
+
+    route_line = pdk.Layer(
+        "PathLayer",
+        data=path_df,
+        get_path="path",
+        get_color=[77, 163, 255, 220],
+        width_min_pixels=4,
+        rounded=True,
+        pickable=False,
     )
 
     scatter_layer = pdk.Layer(
         "ScatterplotLayer",
         data=points,
         get_position="[lon, lat]",
-        get_radius=60,
+        get_radius=110,
+        get_fill_color="fill_color",
+        get_line_color="line_color",
+        line_width_min_pixels=3,
         pickable=True,
     )
 
-    path_df = pd.DataFrame([{"path": geometry}])
-    path_layer = pdk.Layer(
-        "PathLayer",
-        data=path_df,
-        get_path="path",
-        width_min_pixels=4,
-        pickable=False,
-    )
+    lons = [c[0] for c in geometry]
+    lats = [c[1] for c in geometry]
+    min_lon, max_lon = min(lons), max(lons)
+    min_lat, max_lat = min(lats), max(lats)
 
     view_state = pdk.ViewState(
-        latitude=(point_a["lat"] + point_b["lat"]) / 2,
-        longitude=(point_a["lon"] + point_b["lon"]) / 2,
+        latitude=(min_lat + max_lat) / 2,
+        longitude=(min_lon + max_lon) / 2,
         zoom=zoom_for_distance_km(distance_km),
+        pitch=0,
+        bearing=0,
     )
 
     deck = pdk.Deck(
-        layers=[path_layer, scatter_layer],
+        layers=[route_casing, route_line, scatter_layer],
         initial_view_state=view_state,
-        tooltip={"text": "{name}"},
-        map_style="light",
+        tooltip={"text": "{name}\n{label}"},
+        map_style="dark",
     )
 
     st.pydeck_chart(deck, use_container_width=True)

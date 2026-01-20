@@ -96,14 +96,19 @@ It is loaded by the prediction logic during inference.
 
 ## Screenshots
 
-Frontend UI:
-    assets/..
+<details>
+<summary>Click to view screenshots</summary>
 
-API (Swagger):
-    assets/..
+### Frontend UI
+<img src="assets/appscreen.png" width="600">
 
-Model evaluation:
-    assets/..
+### API (Swagger)
+<img src="assets/swaggerscreen.png" width="600">
+
+### Model evaluation
+<img src="assets/evalscreen.png" width="600">
+
+</details>
 
 ---
 
@@ -113,3 +118,9 @@ Model evaluation:
 - Changes to features require retraining the model.
 
 ---
+
+## Disclaimers
+- For this project I used LLMs to:
+    - Generate picture (header)
+    - README-structure
+    - Understand and implement OSRM-routing

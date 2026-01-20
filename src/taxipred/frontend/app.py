@@ -1,4 +1,7 @@
 from __future__ import annotations
+from taxipred.backend.explore import DataExplorer
+from taxipred.utils.constants import TAXI_CSV_CLEANED
+from taxipred.utils.data import load_training_data
 
 import streamlit as st
 
@@ -15,8 +18,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Taxi Price Predictor")
-st.caption("Choose to enter distance directly or provide Point A and Point B.")
+st.image("../../../assets/taxiheader.jpg", use_container_width=True)
 
 MAX_DISTANCE_KM = 50.0
 
@@ -78,6 +80,16 @@ with st.sidebar:
                 per_minute_rate = st.number_input("Rate per minute", 0.0, 0.5, 0.0, 0.1)
 
         submitted = st.form_submit_button("Predict", use_container_width=True)
+
+    with st.expander("How it works"):
+        st.markdown(
+            """
+            1. Enter trip details here in the sidebar  
+            2. Optional parameters fall back to dataset-based defaults  
+            3. Inputs are passed to a trained ML pipeline via FastAPI  
+            4. The model returns an estimated trip price  
+            """
+        )
 
 
 ################### MAIN
@@ -164,3 +176,45 @@ with right:
         )
     else:
         st.info("Map is shown when using Point A + Point B.")
+
+
+########## INFO
+
+with st.expander("About the dataset"):
+    st.markdown(
+        """
+        **Source**  
+        Historical taxi trip data used for training a regression model.
+
+        **Target**  
+        Trip price (continuous).
+
+        **Key features**
+        - Trip distance (km)
+        - Time of day
+        - Day of week
+        - Passenger count
+        - Traffic conditions
+        - Weather conditions
+        - Pricing parameters (base fare, per-km, per-minute)
+
+        **Preprocessing**
+        - Numerical features: median imputation
+        - Categorical features: most-frequent imputation + one-hot encoding
+
+        **Model**
+        - Random Forest Regressor
+        - Trained using a scikit-learn Pipeline
+
+        **Notes**
+        - Predictions are most reliable for trips under 50 km  
+        - This is a demonstration model, not a production pricing system
+        """
+    )
+
+df = load_training_data(TAXI_CSV_CLEANED)
+explorer = DataExplorer(df)
+
+with st.expander("Training data stats"):
+    stats_df = explorer.stats().df
+    st.dataframe(stats_df, use_container_width=True, hide_index=True)

@@ -2,7 +2,7 @@
 
 ## Purpose and Goals
 This project demonstrates an end-to-end machine learning workflow for predicting taxi prices based on structured trip data.
-It is designed as an educational and portfolio project, with emphasis on correctness, reproducibility, and clean software structure rather than maximum predictive performance.
+It is designed as an educational project, with emphasis on correctness, reproducibility, and clean software structure rather than maximum predictive performance.
 
 The project focuses on:
 - building a reproducible ML pipeline
@@ -46,7 +46,7 @@ Or using pip:
 
 ### 2. Run the API (FastAPI)
 
-    uvicorn taxipred.backend.api:app --reload
+    uv run uvicorn taxipred.backend.api:app --reload
 
 Open Swagger UI:
     http://127.0.0.1:8000/docs
@@ -55,7 +55,7 @@ Open Swagger UI:
 
 ### 3. Run the Frontend (Streamlit)
 
-    streamlit run src/taxipred/frontend/app.py
+    uv run streamlit run src/taxipred/frontend/app.py
 
 ---
 
@@ -120,7 +120,7 @@ It is loaded by the prediction logic during inference.
 ---
 
 ## Disclaimers
-- For this project I used LLMs to:
+- For this project LLMs were used to:
     - Generate picture (header)
     - README-structure
     - Understand and implement OSRM-routing

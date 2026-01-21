@@ -16,6 +16,7 @@ st.set_page_config(
     page_title="Taxi Price Predictor",
     page_icon="🚕",
     layout="wide",
+    # add always dark mode
 )
 
 st.image("../../../assets/taxiheader.jpg", use_container_width=True)

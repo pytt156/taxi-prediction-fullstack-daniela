@@ -180,7 +180,7 @@ with right:
 
 ########## INFO
 
-with st.expander("About the dataset"):
+with st.expander("About the site"):
     st.markdown(
         """
         **Source**  

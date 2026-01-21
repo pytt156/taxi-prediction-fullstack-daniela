@@ -34,7 +34,7 @@ async def start():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "build": "api-2026-01-15-XYZ"}
+    return {"status": "ok"}
 
 
 @app.get("/stats")

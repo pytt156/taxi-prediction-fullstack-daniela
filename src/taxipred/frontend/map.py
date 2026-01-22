@@ -136,7 +136,7 @@ def render_map(
         map_style="dark",
     )
 
-    st.pydeck_chart(deck, use_container_width=True)
+    st.pydeck_chart(deck, width="stretch")
 
 
 def _zoom_for_distance_km(distance_km: float) -> int:

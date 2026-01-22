@@ -56,3 +56,8 @@ def _post(path: str, payload: dict) -> dict:
     response = requests.post(url, json=payload, timeout=10)
     response.raise_for_status()
     return response.json()
+
+
+def call_prediction_api(payload: dict) -> dict:
+    """Call the FastAPI /predict endpoint and return the prediction response."""
+    return _post("/predict", payload)

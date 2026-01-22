@@ -1,9 +1,9 @@
 # Taxi Price Prediction
 
 <p align=center>
-<img src="assets/taxiheader.jpg" width="740">
-<img src="assets/sidebarscreen.png" width="200">
-<img src="assets/appscreen3.png" width="540">
+<img src="assets/taxiheader.jpg" width="100%">
+<img src="assets/sidebarscreen.png" width="20%">
+<img src="assets/appscreen3.png" width="54%">
 </p>
 
 ---

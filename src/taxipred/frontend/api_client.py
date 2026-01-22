@@ -8,6 +8,7 @@ AUTO = "(auto)"
 
 
 def get_api_base() -> str:
+    """Return API base URL from session state or environment variable."""
     return st.session_state.get(
         "api_base_url",
         os.getenv("TAXIPRED_API_URL", "http://localhost:8000"),
@@ -26,6 +27,13 @@ def build_prediction_payload(
     per_km_rate: float,
     per_minute_rate: float,
 ) -> dict:
+    """
+    Build the JSON payload expected by the FastAPI `/predict` endpoint.
+
+    Note:
+        UI "Now/Today" and "(auto)" selections are translated to omitted fields
+        so the backend can apply defaults.
+    """
     payload = {
         "trip_distance_km": float(trip_distance_km),
         "passenger_count": int(passenger_count),
@@ -43,11 +51,8 @@ def build_prediction_payload(
 
 
 def _post(path: str, payload: dict) -> dict:
+    """POST JSON to the API and return the decoded response."""
     url = f"{get_api_base()}{path}"
     response = requests.post(url, json=payload, timeout=10)
     response.raise_for_status()
     return response.json()
-
-
-def call_prediction_api(payload: dict) -> dict:
-    return _post("/predict", payload)

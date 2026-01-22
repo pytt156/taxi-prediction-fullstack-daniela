@@ -14,14 +14,17 @@ from taxipred.frontend.map import geocode_nominatim, route_osrm, render_map
 
 
 def configure_page() -> None:
+    """Configure Streamlit page settings (title, icon, layout)."""
     st.set_page_config(page_title="Taxi Price Predictor", page_icon="🚕", layout="wide")
 
 
 def render_header() -> None:
+    """Render the page header image."""
     st.image(HEADER, width="stretch")
 
 
 def render_app(max_distance_km: float) -> None:
+    """Render the full app (sidebar, main panels, and info sections)."""
     form = _render_sidebar(max_distance_km)
     state = _handle_submit(form, max_distance_km)
 

@@ -7,6 +7,13 @@ import streamlit as st
 
 
 def geocode_nominatim(query: str) -> dict:
+    """
+    Geocode a free-text location using Nominatim (OpenStreetMap).
+
+    Raises:
+        ValueError: If no result is returned.
+        requests.HTTPError: If the request fails.
+    """
     url = "https://nominatim.openstreetmap.org/search"
     params = {"q": query, "format": "json", "limit": 1}
     headers = {"User-Agent": "taxi-prediction-lab/1.0 (streamlit demo)"}
@@ -26,6 +33,16 @@ def geocode_nominatim(query: str) -> dict:
 
 
 def route_osrm(a_lon: float, a_lat: float, b_lon: float, b_lat: float) -> dict:
+    """
+    Compute a driving route between two coordinates using the public OSRM demo server.
+
+    Returns:
+        dict with distance_km, duration_min, geometry (list of [lon, lat]).
+
+    Raises:
+        ValueError: If routing fails or returns no routes.
+        requests.HTTPError: If the request fails.
+    """
     url = f"https://router.project-osrm.org/route/v1/driving/{a_lon},{a_lat};{b_lon},{b_lat}"
     params = {"overview": "full", "geometries": "geojson"}
 
@@ -44,24 +61,10 @@ def route_osrm(a_lon: float, a_lat: float, b_lon: float, b_lat: float) -> dict:
     }
 
 
-def zoom_for_distance_km(distance_km: float) -> int:
-    if distance_km < 1:
-        return 14
-    if distance_km < 3:
-        return 13
-    if distance_km < 8:
-        return 12
-    if distance_km < 20:
-        return 10
-    return 9
-
-
 def render_map(
-    point_a: dict,
-    point_b: dict,
-    geometry: list,
-    distance_km: float,
+    point_a: dict, point_b: dict, geometry: list, distance_km: float
 ) -> None:
+    """Render route + start/end markers as a PyDeck map inside Streamlit."""
     points = pd.DataFrame(
         [
             {
@@ -118,13 +121,10 @@ def render_map(
 
     lons = [c[0] for c in geometry]
     lats = [c[1] for c in geometry]
-    min_lon, max_lon = min(lons), max(lons)
-    min_lat, max_lat = min(lats), max(lats)
-
     view_state = pdk.ViewState(
-        latitude=(min_lat + max_lat) / 2,
-        longitude=(min_lon + max_lon) / 2,
-        zoom=zoom_for_distance_km(distance_km),
+        latitude=(min(lats) + max(lats)) / 2,
+        longitude=(min(lons) + max(lons)) / 2,
+        zoom=_zoom_for_distance_km(distance_km),
         pitch=0,
         bearing=0,
     )
@@ -136,4 +136,16 @@ def render_map(
         map_style="dark",
     )
 
-    st.pydeck_chart(deck, width="stretch")
+    st.pydeck_chart(deck, use_container_width=True)
+
+
+def _zoom_for_distance_km(distance_km: float) -> int:
+    if distance_km < 1:
+        return 14
+    if distance_km < 3:
+        return 13
+    if distance_km < 8:
+        return 12
+    if distance_km < 20:
+        return 10
+    return 9

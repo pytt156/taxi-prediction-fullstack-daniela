@@ -9,3 +9,6 @@ TAXI_CSV_CLEANED = CLEANED_DATA / "taxi_prices_cleaned.csv"
 
 MODEL_PATH = Path(__file__).parents[3].resolve() / "models"
 MODEL = MODEL_PATH / "taxi_price_predictor.joblib"
+
+ASSETS_PATH = Path(__file__).parents[3].resolve() / "assets"
+HEADER = ASSETS_PATH / "taxiheader.jpg"

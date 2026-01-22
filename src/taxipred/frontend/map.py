@@ -1,17 +1,9 @@
 from __future__ import annotations
 
-import os
 import pandas as pd
 import pydeck as pdk
 import requests
 import streamlit as st
-
-
-def get_api_base() -> str:
-    return st.session_state.get(
-        "api_base_url",
-        os.getenv("TAXIPRED_API_URL", "http://localhost:8000"),
-    ).rstrip("/")
 
 
 def geocode_nominatim(query: str) -> dict:
@@ -144,4 +136,4 @@ def render_map(
         map_style="dark",
     )
 
-    st.pydeck_chart(deck, use_container_width=True)
+    st.pydeck_chart(deck, width="stretch")

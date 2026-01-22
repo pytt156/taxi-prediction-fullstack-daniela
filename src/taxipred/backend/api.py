@@ -1,26 +1,31 @@
 from fastapi import FastAPI, Query
 from contextlib import asynccontextmanager
-from taxipred.utils.constants import MODEL, TAXI_CSV_CLEANED
-import joblib
-import pandas as pd
+
 from taxipred.backend.schemas import PredictionInput
-from taxipred.backend.explore import DataExplorer
+from taxipred.backend.responses import df_to_json_response
+from taxipred.backend.services import apply_dataset_defaults, predict_with_model
+from taxipred.backend.dependencies import (
+    load_model,
+    load_training_data,
+    compute_dataset_defaults,
+)
+from taxipred.common.explore import DataExplorer
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.model = joblib.load(MODEL)
-    app.state.df = pd.read_csv(TAXI_CSV_CLEANED)
-    app.state.defaults = {
-        "base_fare": app.state.df["base_fare"].median(),
-        "per_km_rate": app.state.df["per_km_rate"].median(),
-        "per_minute_rate": app.state.df["per_minute_rate"].median(),
-        "weather": app.state.df["weather"].mode().iloc[0],
-        "traffic_conditions": app.state.df["traffic_conditions"].mode().iloc[0],
-    }
+    model = load_model()
+    df = load_training_data()
+    defaults = compute_dataset_defaults(df)
+
+    app.state.model = model
+    app.state.df = df
+    app.state.defaults = defaults
+
     yield
-    del app.state.df
+
     del app.state.model
+    del app.state.df
     del app.state.defaults
 
 
@@ -39,22 +44,22 @@ async def health():
 
 @app.get("/stats")
 async def stats():
-    data = DataExplorer(app.state.df)
-    return data.stats().json_response()
+    explorer = DataExplorer(app.state.df)
+    return df_to_json_response(explorer.stats().df)
 
 
 @app.get("/trips/sample")
 async def sample(sample_size: int = Query(10, ge=1, le=100)):
-    data = DataExplorer(app.state.df)
-    return data.sample(sample_size).json_response()
+    explorer = DataExplorer(app.state.df)
+    return df_to_json_response(explorer.sample(sample_size).df)
 
 
 @app.post("/predict")
 async def predict(payload: PredictionInput):
     input_data = payload.model_dump()
-    for key, value in app.state.defaults.items():
-        if input_data.get(key) is None:
-            input_data[key] = value
-    input_df = pd.DataFrame([input_data])
-    prediction = app.state.model.predict(input_df)[0]
-    return {"prediction": float(prediction), "inputs_used": input_data}
+    input_data = apply_dataset_defaults(input_data, app.state.defaults)
+    prediction = predict_with_model(app.state.model, input_data)
+    return {
+        "prediction": prediction,
+        "inputs_used": input_data,
+    }

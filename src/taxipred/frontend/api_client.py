@@ -1,13 +1,20 @@
 from __future__ import annotations
+
+import os
 import requests
-
-from taxipred.utils.routing import get_api_base
-
+import streamlit as st
 
 AUTO = "(auto)"
 
 
-def build_payload(
+def get_api_base() -> str:
+    return st.session_state.get(
+        "api_base_url",
+        os.getenv("TAXIPRED_API_URL", "http://localhost:8000"),
+    ).rstrip("/")
+
+
+def build_prediction_payload(
     *,
     trip_distance_km: float,
     passenger_count: int,
@@ -32,12 +39,15 @@ def build_payload(
         "per_km_rate": per_km_rate if per_km_rate > 0 else None,
         "per_minute_rate": per_minute_rate if per_minute_rate > 0 else None,
     }
+    return {k: v for k, v in payload.items() if v is not None}
 
-    return {key: value for key, value in payload.items() if value is not None}
 
-
-def call_prediction_api(payload: dict) -> dict:
-    url = f"{get_api_base()}/predict"
+def _post(path: str, payload: dict) -> dict:
+    url = f"{get_api_base()}{path}"
     response = requests.post(url, json=payload, timeout=10)
     response.raise_for_status()
     return response.json()
+
+
+def call_prediction_api(payload: dict) -> dict:
+    return _post("/predict", payload)

@@ -1,6 +1,15 @@
 # Taxi Price Prediction
 
+<p align=center>
+<img src="assets/taxiheader.jpg" width="740">
+<img src="assets/sidebarscreen.png" width="200">
+<img src="assets/appscreen3.png" width="540">
+</p>
+
+---
+
 ## Purpose and Goals
+
 This project demonstrates an end-to-end machine learning workflow for predicting taxi prices based on structured trip data.
 It is designed as an educational project, with emphasis on correctness, reproducibility, and clean software structure rather than maximum predictive performance.
 
@@ -14,21 +23,29 @@ The project focuses on:
 ---
 
 ## Project Structure
+```
+.
+├── assets/                 # Documentation images & screenshots
+├── data/
+│   ├── raw/                # Immutable source data
+│   └── processed/          # Cleaned training data
+├── models/                 # Trained model
+├── notebooks/              # EDA & experimentation
+├── src/
+│   └── taxipred/
+│       ├── backend/        # FastAPI services
+│       │   ├── api.py
+│       │   ├── services.py
+│       │   └── schemas.py
+│       ├── frontend/       # Streamlit app
+│       │   ├── app.py
+│       │   ├── ui.py
+│       │   └── services.py
+│       └── common/         # Shared utilities & constants
+├── pyproject.toml
+└── uv.lock
+```
 
-    .
-    ├── assets/                # Images and screenshots used in documentation
-    ├── data/
-    │   ├── raw/               # Original, immutable dataset
-    │   └── processed/         # Cleaned data used for training
-    ├── notebooks/             # EDA, data cleaning, evaluation, pipelines
-    ├── models/                # Trained model artifacts
-    ├── src/
-    │   └── taxipred/
-    │       ├── backend/       # FastAPI application
-    │       ├── frontend/      # Streamlit application
-    │       └── utils/         # Shared business & ML logic
-    ├── pyproject.toml
-    └── uv.lock
 ---
 
 ## How to Use This Repo
@@ -36,35 +53,45 @@ The project focuses on:
 ### 1. Install dependencies
 This project uses pyproject.toml and uv.lock.
 
+/
 Using uv:
-    uv sync
-
+```bash
+uv sync
+uv pip install -e .
+```
 Or using pip:
-    pip install -e .
-
+```bash
+pip install -e .
+```
 ---
 
 ### 2. Run the API (FastAPI)
+```bash
+uv run uvicorn taxipred.backend.api:app --reload
+```
 
-    uv run uvicorn taxipred.backend.api:app --reload
-
-Open Swagger UI:
-    http://127.0.0.1:8000/docs
+Open Swagger UI: http://127.0.0.1:8000/docs
+<p align="center">
+<img src="assets/swaggerscreen.png" width="50%">
+</p>
 
 ---
 
 ### 3. Run the Frontend (Streamlit)
-
-    uv run streamlit run src/taxipred/frontend/app.py
-
+```bash
+uv run streamlit run src/taxipred/frontend/app.py
+```
 ---
 
 ### 4. Model Artifact
-The trained model is stored at:
-
-    models/taxi_price_predictor.joblib
+The trained model is stored at: `models/taxi_price_predictor.joblib`
 
 It is loaded by the prediction logic during inference.
+
+<p align=center>
+<img src="assets/evalscreen.png" width="300" />
+<img src="assets/pipelinescreen.png" width="500" />
+</p>
 
 ---
 
@@ -82,6 +109,8 @@ It is loaded by the prediction logic during inference.
 - Notebooks are used for experimentation only.
 - Production logic lives under src/.
 - API, frontend, and model logic are decoupled.
+- Frontend and backend logic are structured around SRP, with thin entrypoints and explicit service layers.
+
 
 ### Reproducibility
 - Raw data remains immutable.
@@ -94,33 +123,20 @@ It is loaded by the prediction logic during inference.
 
 ---
 
-## Screenshots
+## Limitations & Design Notes
 
-<details>
-<summary>Click to view screenshots</summary>
+- Educational project; not production-ready.
+- No monitoring or CI/CD included.
+- Model retraining required if features change.
 
-### Frontend UI
-<img src="assets/appscreen.png" width="600">
+LLMs were used for documentation support, image generation, and routing implementation guidance.
 
-### API (Swagger)
-<img src="assets/swaggerscreen.png" width="600">
-
-### Model evaluation
-<img src="assets/evalscreen.png" width="600">
-
-</details>
 
 ---
-
-## Known Limitations
-- This is a learning project.
-- No monitoring, CI/CD, or production deployment is included.
-- Changes to features require retraining the model.
-
----
-
-## Disclaimers
-- For this project LLMs were used to:
-    - Generate picture (header)
-    - README-structure
-    - Understand and implement OSRM-routing
+<p>
+<p align="center">
+<img src="https://img.shields.io/badge/Python-3.12-blue" />
+<img src="https://img.shields.io/badge/FastAPI-API-green" />
+<img src="https://img.shields.io/badge/Streamlit-Frontend-red" />
+<img src="https://img.shields.io/badge/scikit--learn-ML-orange" />
+</p>

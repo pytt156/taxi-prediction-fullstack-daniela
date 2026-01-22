@@ -1,9 +1,8 @@
-import json
-from fastapi.responses import JSONResponse
+import pandas as pd
 
 
 class DataExplorer:
-    def __init__(self, df, limit=100):
+    def __init__(self, df: pd.DataFrame, limit: int = 100):
         self._df_full = df
         self._df = df.head(limit)
 
@@ -18,7 +17,3 @@ class DataExplorer:
     def sample(self, sample_size: int = 10):
         self._df = self._df_full.sample(sample_size)
         return self
-
-    def json_response(self):
-        json_data = self.df.to_json(orient="records")
-        return JSONResponse(json.loads(json_data))
